@@ -53,6 +53,7 @@ pub fn execute(
     walk_and_stand: &WalkAndStand,
     field_dimensions: &FieldDimensions,
     parameters: &SearchParameters,
+    take_arms_back_distance: f32,
     path_obstacles_output: &mut AdditionalOutput<Vec<PathObstacle>>,
 ) -> Option<MotionCommand> {
     let robot_to_field = world_state.robot.robot_to_field?;
@@ -63,7 +64,7 @@ pub fn execute(
     let head = HeadMotion::SearchForLostBall;
     if let Some(SearchRole::Goal) = search_role {
         let goal_pose = robot_to_field.inverse() * Isometry2::from(search_position.coords);
-        walk_and_stand.execute(goal_pose, head, path_obstacles_output)
+        walk_and_stand.execute(goal_pose, head, take_arms_back_distance, path_obstacles_output)
     } else {
         let path = walk_path_planner.plan(
             search_position,
@@ -81,7 +82,7 @@ pub fn execute(
         } else {
             OrientationMode::AlignWithPath
         };
-        Some(walk_path_planner.walk_with_obstacle_avoiding_arms(head, orientation_mode, path))
+        Some(walk_path_planner.walk_with_obstacle_avoiding_arms(head, orientation_mode, path, take_arms_back_distance,))
     }
 }
 

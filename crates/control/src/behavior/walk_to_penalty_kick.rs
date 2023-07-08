@@ -8,6 +8,7 @@ pub fn execute(
     world_state: &WorldState,
     walk_and_stand: &WalkAndStand,
     look_action: &LookAction,
+    take_arms_back_distance: f32,
     path_obstacles_output: &mut AdditionalOutput<Vec<PathObstacle>>,
     field_dimensions: &FieldDimensions,
 ) -> Option<MotionCommand> {
@@ -21,6 +22,7 @@ pub fn execute(
     walk_and_stand.execute(
         robot_to_field.inverse() * kick_off_pose,
         look_action.execute(),
+        take_arms_back_distance,
         path_obstacles_output,
     )
 }

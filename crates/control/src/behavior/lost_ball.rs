@@ -12,6 +12,7 @@ pub fn execute(
     absolute_last_known_ball_position: Point2<f32>,
     walk_path_planner: &WalkPathPlanner,
     lost_ball_parameters: &LostBallParameters,
+    take_arms_back_distance: f32,
     path_obstacles_output: &mut AdditionalOutput<Vec<PathObstacle>>,
 ) -> Option<MotionCommand> {
     let robot_to_field = world_state.robot.robot_to_field?;
@@ -33,5 +34,6 @@ pub fn execute(
         HeadMotion::SearchForLostBall,
         OrientationMode::Override(orientation),
         path,
+        take_arms_back_distance,
     ))
 }

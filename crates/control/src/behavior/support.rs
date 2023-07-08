@@ -19,6 +19,7 @@ pub fn execute(
     minimum_x: f32,
     walk_and_stand: &WalkAndStand,
     look_action: &LookAction,
+    take_arms_back_distance: f32,
     path_obstacles_output: &mut AdditionalOutput<Vec<PathObstacle>>,
 ) -> Option<MotionCommand> {
     let pose = support_pose(
@@ -29,7 +30,12 @@ pub fn execute(
         maximum_x_in_ready_and_when_ball_is_not_free,
         minimum_x,
     )?;
-    walk_and_stand.execute(pose, look_action.execute(), path_obstacles_output)
+    walk_and_stand.execute(
+        pose,
+        look_action.execute(),
+        take_arms_back_distance,
+        path_obstacles_output,
+    )
 }
 
 fn support_pose(

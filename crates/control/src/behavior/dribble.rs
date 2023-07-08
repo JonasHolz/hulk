@@ -15,6 +15,7 @@ pub fn execute(
     walk_path_planner: &WalkPathPlanner,
     in_walk_kicks: &InWalkKicks,
     parameters: &Dribbling,
+    take_arms_back_distance: f32,
     dribble_path: Option<Vec<PathSegment>>,
 ) -> Option<MotionCommand> {
     let ball_position = world_state.ball?.ball_in_ground;
@@ -64,9 +65,12 @@ pub fn execute(
         orientation_mode => orientation_mode,
     };
     match dribble_path {
-        Some(path) => {
-            Some(walk_path_planner.walk_with_obstacle_avoiding_arms(head, orientation_mode, path))
-        }
+        Some(path) => Some(walk_path_planner.walk_with_obstacle_avoiding_arms(
+            head,
+            orientation_mode,
+            path,
+            take_arms_back_distance,
+        )),
         None => Some(MotionCommand::Stand {
             head,
             is_energy_saving: false,

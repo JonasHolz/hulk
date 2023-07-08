@@ -38,52 +38,62 @@ impl<'cycle> Defend<'cycle> {
     fn with_pose(
         &self,
         pose: Isometry2<f32>,
+        take_arms_back_distance: f32,
         path_obstacles_output: &mut AdditionalOutput<Vec<PathObstacle>>,
     ) -> Option<MotionCommand> {
-        self.walk_and_stand
-            .execute(pose, self.look_action.execute(), path_obstacles_output)
+        self.walk_and_stand.execute(
+            pose,
+            self.look_action.execute(),
+            take_arms_back_distance,
+            path_obstacles_output,
+        )
     }
 
     pub fn left(
         &self,
+        take_arms_back_distance: f32,
         path_obstacles_output: &mut AdditionalOutput<Vec<PathObstacle>>,
     ) -> Option<MotionCommand> {
         let pose = defend_left_pose(self.world_state, self.field_dimensions, self.role_positions)?;
-        self.with_pose(pose, path_obstacles_output)
+        self.with_pose(pose, take_arms_back_distance, path_obstacles_output)
     }
 
     pub fn right(
         &self,
+        take_arms_back_distance: f32,
         path_obstacles_output: &mut AdditionalOutput<Vec<PathObstacle>>,
     ) -> Option<MotionCommand> {
         let pose = defend_right_pose(self.world_state, self.field_dimensions, self.role_positions)?;
-        self.with_pose(pose, path_obstacles_output)
+        self.with_pose(pose, take_arms_back_distance, path_obstacles_output)
     }
 
     pub fn penalty_kick(
         &self,
+        take_arms_back_distance: f32,
         path_obstacles_output: &mut AdditionalOutput<Vec<PathObstacle>>,
     ) -> Option<MotionCommand> {
         let pose =
             defend_penalty_kick(self.world_state, self.field_dimensions, self.role_positions)?;
-        self.with_pose(pose, path_obstacles_output)
+        self.with_pose(pose, take_arms_back_distance, path_obstacles_output)
     }
 
     pub fn goal(
         &self,
+        take_arms_back_distance: f32,
         path_obstacles_output: &mut AdditionalOutput<Vec<PathObstacle>>,
     ) -> Option<MotionCommand> {
         let pose = defend_goal_pose(self.world_state, self.field_dimensions, self.role_positions)?;
-        self.with_pose(pose, path_obstacles_output)
+        self.with_pose(pose, take_arms_back_distance, path_obstacles_output)
     }
 
     pub fn kick_off(
         &self,
+        take_arms_back_distance: f32,
         path_obstacles_output: &mut AdditionalOutput<Vec<PathObstacle>>,
     ) -> Option<MotionCommand> {
         let pose =
             defend_kick_off_pose(self.world_state, self.field_dimensions, self.role_positions)?;
-        self.with_pose(pose, path_obstacles_output)
+        self.with_pose(pose, take_arms_back_distance, path_obstacles_output)
     }
 }
 
