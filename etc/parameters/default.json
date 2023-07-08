@@ -883,7 +883,8 @@
       "hysteresis": [0.05, 0.05],
       "target_reached_thresholds": [0.02, 0.05],
       "hybrid_align_distance": 1.0,
-      "distance_to_be_aligned": 0.05
+      "distance_to_be_aligned": 0.05,
+      "take_arms_back_distance": 0.5
     },
     "lost_ball": {
       "offset_to_last_ball_location": [1.0, 0.0]

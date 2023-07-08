@@ -88,25 +88,26 @@ impl<'cycle> WalkPathPlanner<'cycle> {
         head: HeadMotion,
         orientation_mode: OrientationMode,
         path: Vec<PathSegment>,
+        take_arms_back_distance: f32,
     ) -> MotionCommand {
         MotionCommand::Walk {
             head,
             orientation_mode,
             path,
-            left_arm: self.arm_motion_with_obstacles(Side::Left),
-            right_arm: self.arm_motion_with_obstacles(Side::Right),
+            left_arm: self.arm_motion_with_obstacles(Side::Left, take_arms_back_distance),
+            right_arm: self.arm_motion_with_obstacles(Side::Right, take_arms_back_distance),
         }
     }
 
-    fn arm_motion_with_obstacles(&self, side: Side) -> ArmMotion {
+    fn arm_motion_with_obstacles(&self, side: Side,take_arms_back_distance: f32,) -> ArmMotion {
         if self.obstacles.iter().any(|obstacle| {
             let is_on_relevant_side = match side {
                 Side::Left => obstacle.position.y.is_sign_positive(),
                 Side::Right => obstacle.position.y.is_sign_negative(),
             };
             is_on_relevant_side
-                && obstacle.position.x.abs() < 0.5
-                && obstacle.position.y.abs() < 0.5
+                && obstacle.position.x.abs() < take_arms_back_distance
+                && obstacle.position.y.abs() < take_arms_back_distance
         }) {
             ArmMotion::PullTight
         } else {
@@ -141,6 +142,7 @@ impl<'cycle> WalkAndStand<'cycle> {
         &self,
         target_pose: Isometry2<f32>,
         head: HeadMotion,
+        take_arms_back_distance: f32,
         path_obstacles_output: &mut AdditionalOutput<Vec<PathObstacle>>,
     ) -> Option<MotionCommand> {
         let robot_to_field = self.world_state.robot.robot_to_field?;
@@ -184,6 +186,7 @@ impl<'cycle> WalkAndStand<'cycle> {
                 head,
                 orientation_mode,
                 path,
+                take_arms_back_distance,
             ))
         }
     }
