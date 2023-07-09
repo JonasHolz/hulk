@@ -334,6 +334,7 @@ impl BehaviorCycler {
                     has_ground_contact: &true,
                     maximum_step_size: &parameters.step_planner.max_step_size,
                     striker_set_position: &parameters.behavior.role_positions.striker_set_position,
+                    take_arms_back_distance: &parameters.take_arms_back_distance,
                 })
                 .wrap_err("failed to execute cycle of node `Behavior`")?;
             own_database.main_outputs.motion_command = main_outputs.motion_command.value;

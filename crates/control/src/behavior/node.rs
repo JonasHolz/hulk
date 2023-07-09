@@ -52,6 +52,7 @@ pub struct CycleContext {
     pub maximum_step_size: Parameter<Step, "step_planner.max_step_size">,
     pub striker_set_position:
         Parameter<Vector2<f32>, "behavior.role_positions.striker_set_position">,
+    pub take_arms_back_distance: Parameter<f32, "take_arms_back_distance">,
 }
 
 #[context]
@@ -196,17 +197,33 @@ impl Behavior {
                         *context.maximum_step_size,
                     ),
                     Action::Calibrate => calibrate::execute(world_state),
-                    Action::DefendGoal => defend.goal(&mut context.path_obstacles),
-                    Action::DefendKickOff => defend.kick_off(&mut context.path_obstacles),
-                    Action::DefendLeft => defend.left(&mut context.path_obstacles),
-                    Action::DefendRight => defend.right(&mut context.path_obstacles),
-                    Action::DefendPenaltyKick => defend.penalty_kick(&mut context.path_obstacles),
+                    Action::DefendGoal => defend.goal(
+                        *context.take_arms_back_distance,
+                        &mut context.path_obstacles,
+                    ),
+                    Action::DefendKickOff => defend.kick_off(
+                        *context.take_arms_back_distance,
+                        &mut context.path_obstacles,
+                    ),
+                    Action::DefendLeft => defend.left(
+                        *context.take_arms_back_distance,
+                        &mut context.path_obstacles,
+                    ),
+                    Action::DefendRight => defend.right(
+                        *context.take_arms_back_distance,
+                        &mut context.path_obstacles,
+                    ),
+                    Action::DefendPenaltyKick => defend.penalty_kick(
+                        *context.take_arms_back_distance,
+                        &mut context.path_obstacles,
+                    ),
                     Action::Stand => stand::execute(world_state, context.field_dimensions),
                     Action::Dribble => dribble::execute(
                         world_state,
                         &walk_path_planner,
                         context.in_walk_kicks,
                         &context.parameters.dribbling,
+                        *context.take_arms_back_distance,
                         context.dribble_path.cloned(),
                     ),
                     Action::Jump => jump::execute(world_state),
@@ -217,6 +234,7 @@ impl Behavior {
                         &walk_and_stand,
                         context.field_dimensions,
                         &context.parameters.search,
+                        *context.take_arms_back_distance,
                         &mut context.path_obstacles,
                     ),
                     Action::SearchForLostBall => lost_ball::execute(
@@ -224,6 +242,7 @@ impl Behavior {
                         self.absolute_last_known_ball_position,
                         &walk_path_planner,
                         context.lost_ball_parameters,
+                        *context.take_arms_back_distance,
                         &mut context.path_obstacles,
                     ),
                     Action::SupportLeft => support::execute(
@@ -241,6 +260,7 @@ impl Behavior {
                         context.parameters.role_positions.left_midfielder_minimum_x,
                         &walk_and_stand,
                         &look_action,
+                        *context.take_arms_back_distance,
                         &mut context.path_obstacles,
                     ),
                     Action::SupportRight => support::execute(
@@ -258,6 +278,7 @@ impl Behavior {
                         context.parameters.role_positions.right_midfielder_minimum_x,
                         &walk_and_stand,
                         &look_action,
+                        *context.take_arms_back_distance,
                         &mut context.path_obstacles,
                     ),
                     Action::SupportStriker => support::execute(
@@ -278,12 +299,14 @@ impl Behavior {
                             .striker_supporter_minimum_x,
                         &walk_and_stand,
                         &look_action,
+                        *context.take_arms_back_distance,
                         &mut context.path_obstacles,
                     ),
                     Action::WalkToKickOff => walk_to_kick_off::execute(
                         world_state,
                         &walk_and_stand,
                         &look_action,
+                        *context.take_arms_back_distance,
                         &mut context.path_obstacles,
                         *context.striker_set_position,
                     ),
@@ -291,6 +314,7 @@ impl Behavior {
                         world_state,
                         &walk_and_stand,
                         &look_action,
+                        *context.take_arms_back_distance,
                         &mut context.path_obstacles,
                         context.field_dimensions,
                     ),
