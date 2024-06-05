@@ -7,9 +7,11 @@ use framework::{AdditionalOutput, MainOutput};
 use linear_algebra::{point, Isometry2, Point2};
 use nalgebra::{clamp, DMatrix};
 use serde::{Deserialize, Serialize};
+use spl_network_messages::Team;
 use types::{
     ball_position::{BallPosition, HypotheticalBallPosition},
     field_dimensions::FieldDimensions,
+    filtered_game_controller_state::FilteredGameControllerState,
     parameters::SearchSuggestorParameters,
 };
 
@@ -32,6 +34,9 @@ pub struct CycleContext {
         Input<Vec<HypotheticalBallPosition<Ground>>, "hypothetical_ball_positions">,
     ground_to_field: Input<Option<Isometry2<Ground, Field>>, "ground_to_field?">,
     heatmap: AdditionalOutput<DMatrix<f32>, "ball_search_heatmap">,
+    filtered_game_controller_state:
+        Input<Option<FilteredGameControllerState>, "filtered_game_controller_state?">,
+    field_dimensions: Parameter<FieldDimensions, "field_dimensions">,
 }
 
 #[context]
@@ -64,6 +69,8 @@ impl SearchSuggestor {
             context.hypothetical_ball_positions,
             context.ground_to_field.copied(),
             context.search_suggestor_configuration.heatmap_decay_factor,
+            context.filtered_game_controller_state.copied(),
+            context.field_dimensions.clone(),
         );
         let suggested_search_position = self
             .heatmap
@@ -84,6 +91,8 @@ impl SearchSuggestor {
         hypothetical_ball_positions: &Vec<HypotheticalBallPosition<Ground>>,
         ground_to_field: Option<Isometry2<Ground, Field>>,
         heatmap_decay_factor: f32,
+        filtered_game_controller_state: Option<FilteredGameControllerState>,
+        field_dimensions: FieldDimensions,
     ) {
         if let Some(ball_position) = ball_position {
             if let Some(ground_to_field) = ground_to_field {
@@ -95,6 +104,37 @@ impl SearchSuggestor {
                 let ball_hypothesis_position = ground_to_field * ball_hypothesis.position;
                 self.heatmap[ball_hypothesis_position] =
                     (self.heatmap[ball_hypothesis_position] + ball_hypothesis.validity) / 2.0;
+            }
+        }
+        if let Some(filtered_game_controller_state) = filtered_game_controller_state {
+            if let Some(sub_state) = filtered_game_controller_state.sub_state {
+                match (sub_state, filtered_game_controller_state.kicking_team) {
+                    (spl_network_messages::SubState::CornerKick, Team::Hulks) => {
+                        self.heatmap.spawn_hyptothesis(point![0.0, 0.0]);
+                    }
+                    (spl_network_messages::SubState::CornerKick, Team::Opponent) => {
+                        self.heatmap.spawn_hyptothesis(point![0.0, 0.0]);
+                    }
+                    (spl_network_messages::SubState::GoalKick, Team::Hulks) => {
+                        self.heatmap
+                            .spawn_hyptothesis(-field_dimensions.get_goal_box_corners().0);
+                        self.heatmap
+                            .spawn_hyptothesis(-field_dimensions.get_goal_box_corners().1);
+                    }
+                    (spl_network_messages::SubState::GoalKick, Team::Opponent) => {
+                        self.heatmap
+                            .spawn_hyptothesis(field_dimensions.get_goal_box_corners().0);
+                        self.heatmap
+                            .spawn_hyptothesis(field_dimensions.get_goal_box_corners().1);
+                    }
+                    (spl_network_messages::SubState::KickIn, Team::Hulks) => {
+                        self.heatmap.spawn_hyptothesis(point![0.0, 0.0]);
+                    }
+                    (spl_network_messages::SubState::KickIn, Team::Opponent) => {
+                        self.heatmap.spawn_hyptothesis(point![0.0, 0.0]);
+                    }
+                    _ => (),
+                }
             }
         }
         self.heatmap.map.scale_mut(1.0 - heatmap_decay_factor);
@@ -134,6 +174,11 @@ impl Heatmap {
             return Some(search_suggestion);
         }
         None
+    }
+
+    fn spawn_hyptothesis(&mut self, point: Point2<Field>) {
+        let point_in_heatmap = self.field_to_heatmap(point);
+        self.map[point_in_heatmap] = self.map[point_in_heatmap] ;
     }
 }
 

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use linear_algebra::Point2;
+use linear_algebra::{point, Point2};
 use path_serde::{PathDeserialize, PathIntrospect, PathSerialize};
 
 use coordinate_systems::Field;
@@ -34,5 +34,17 @@ impl FieldDimensions {
     pub fn is_inside_any_goal_box(&self, position: Point2<Field>) -> bool {
         position.x().abs() > self.length / 2.0 - self.goal_box_area_length
             && position.y().abs() < self.goal_box_area_width / 2.0
+    }
+
+    pub fn get_goal_box_corners(&self) -> (Point2<Field>, Point2<Field>) {
+        let corner_right = point![
+            self.length / 2.0 - self.goal_box_area_length,
+            self.goal_box_area_width / 2.0
+        ];
+        let corner_left = point![
+            self.length / 2.0 - self.goal_box_area_length,
+            -self.goal_box_area_width / 2.0
+        ];
+        (corner_left, corner_right)
     }
 }
